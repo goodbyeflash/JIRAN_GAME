@@ -1,255 +1,17 @@
 import Phaser from 'phaser';
 import EightDirectionPlugin from 'phaser3-rex-plugins/plugins/eightdirection-plugin.js';
-import startImg from './assets/image/btn_start.png';
-import confirmImg from './assets/image/btn_confirm.png';
-import enemyBulletImg from './assets/image/enemy.png';
-import playerImg from './assets/image/player.png';
-import itemImg from './assets/image/item.png';
-import bgImg from './assets/image/bg.png';
-import scoreImg from './assets/image/bg_score.png';
-import popupImg from './assets/image/popup.png';
+import StartImg from './assets/image/btn_start.png';
+import EnemyBulletImg from './assets/image/enemy.png';
+import PlayerImg from './assets/image/player.png';
+import ItemImg from './assets/image/item.png';
+import BgImg from './assets/image/bg.png';
+import ScoreImg from './assets/image/bg_score.png';
 import SpoqaHanSansNeoRegularFont from './assets/font/SpoqaHanSansNeo-Regular.ttf';
-import api from './lib/api';
-
-class endingPopup extends Phaser.Scene {
-  constructor() {
-    super({ key: 'endingPopup' });
-    this.popupContainer;
-    this.formContainer;
-    this.formButton;
-    this.sendButton;
-    this.retryButton;
-    this.retryButton2;
-    this.centerX;
-    this.centerY;
-    this.score;
-    this.nameInputText;
-    this.checkBox;
-  }
-
-  init(data) {
-    this.score = data.score;
-  }
-
-  preload() {
-    this.centerX = this.cameras.main.width / 2;
-    this.centerY = this.cameras.main.height / 2;
-    this.load.plugin(
-      'rexinputtextplugin',
-      'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js',
-      true
-    );
-  }
-  create() {
-    this.popupContainer = this.add.container(0, 0);
-    this.formContainer = this.add.container(0, 0);
-    const test = this.add.graphics();
-    test.fillStyle(0xffffff, 1);
-    test.fillRect(this.centerX - 150, this.centerY - 100, 300, 200);
-    const test2 = this.add
-      .text(this.centerX, this.centerY - 50, '기록을 등록 하시겠습니까?', {
-        color: 'black',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    const test3 = this.add.graphics();
-    test3.fillStyle(0xffffff, 1);
-    test3.fillRect(this.centerX - 150, this.centerY - 100, 300, 200);
-
-    const test4 = this.add
-      .text(this.centerX, this.centerY - 50, '점수 등록', {
-        color: 'black',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.formButton = this.add
-      .text(this.centerX + -50, this.centerY + 50, '기록 등록', {
-        color: 'blue',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.retryButton = this.add
-      .text(this.centerX + 50, this.centerY + 50, '다시 도전', {
-        color: 'red',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.nameInputText = this.add
-      .rexInputText(this.centerX, this.centerY, 300, 100, {
-        type: 'text',
-        text: '',
-        fontSize: '12px',
-        color: 'black',
-        maxLength: 20,
-        fontFamily: 'Open Sans',
-        fontSize: '20px',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.checkBox = this.add
-      .rexInputText(this.centerX, this.centerY + 50, 25, 25, {
-        type: 'checkbox',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.sendButton = this.add
-      .text(this.centerX + -50, this.centerY + 80, '등록하기', {
-        color: 'blue',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.retryButton2 = this.add
-      .text(this.centerX + 50, this.centerY + 80, '다시 도전', {
-        color: 'red',
-        fontFamily: 'Open Sans',
-      })
-      .setOrigin(0.5, 0.5);
-
-    this.popupContainer.add([test, test2, this.formButton, this.retryButton]);
-    this.formContainer.add([
-      this.nameInputText,
-      this.checkBox,
-      test3,
-      test4,
-      this.sendButton,
-      this.retryButton2,
-    ]);
-    this.formContainer.setVisible(false);
-
-    this.formButton
-      .setInteractive({
-        cursor: 'pointer',
-      })
-      .on(
-        'pointerdown',
-        () => {
-          this.popupContainer.setVisible(false);
-          this.formContainer.setVisible(true);
-        },
-        this
-      );
-
-    this.retryButton
-      .setInteractive({
-        cursor: 'pointer',
-      })
-      .on(
-        'pointerdown',
-        () => {
-          this.scene.stop();
-          game.scene.start('game');
-        },
-        this
-      );
-
-    this.sendButton
-      .setInteractive({
-        cursor: 'pointer',
-      })
-      .on(
-        'pointerdown',
-        () => {
-          const sendData = {
-            name: 'TEST',
-            score: this.score,
-            hp: '11111111111',
-            publishedDate: new Date(),
-          };
-          api('post', 'users', sendData, (res) => {
-            if (res.msg == 'OK') {
-              // 이미 hp가 등록되어 있음
-              if (res.result.data.exist) {
-                // 점수가 낮아 갱신 할 필요가 없음
-                if (res.result.data == 'NOT UPDATE') {
-                  console.log('업데이트 할 필요가 없음');
-                }
-                // 데이터 갱신 완료
-                else {
-                  api(
-                    'patch',
-                    `users/${res.result.data.exist._id}`,
-                    sendData,
-                    (res) => {
-                      this.formContainer.setVisible(false);
-                    }
-                  );
-                }
-              }
-              // 데이터 정상적으로 등록 완료
-              else {
-                this.formContainer.setVisible(false);
-              }
-            }
-          });
-        },
-        this
-      );
-
-    this.retryButton2
-      .setInteractive({
-        cursor: 'pointer',
-      })
-      .on(
-        'pointerdown',
-        () => {
-          this.scene.stop();
-          game.scene.start('game');
-        },
-        this
-      );
-  }
-}
-
-class itemPopup extends Phaser.Scene {
-  constructor() {
-    super({ key: 'itemPopup' });
-    this.popupContainer;
-    this.exitButton;
-    this.centerX;
-    this.centerY;
-    this.itemNum;
-    this.itemPopup;
-  }
-  init(data) {
-    this.itemNum = data.itemNum;
-  }
-  preload() {
-    this.centerX = this.cameras.main.width / 2;
-    this.centerY = this.cameras.main.height / 2;
-    this.load.spritesheet('popup', popupImg, {
-      frameWidth: 692,
-      frameHeight: 596,
-    });
-    this.load.image('confirmBtn', confirmImg);
-  }
-  create() {
-    this.add.image(this.centerX, this.centerY, 'popup', this.itemNum);
-
-    this.exitButton = this.add.image(
-      this.centerX,
-      this.centerY + 180,
-      'confirmBtn'
-    );
-    this.exitButton.setOrigin(0.5, 0.5);
-    this.exitButton
-      .setInteractive({
-        cursor: 'pointer',
-      })
-      .on(
-        'pointerdown',
-        () => {
-          this.scene.stop();
-          game.scene.resume('game');
-        },
-        this
-      );
-  }
-}
+import Api from './lib/api';
+import { EndingPopup } from './script/endingPopup';
+import { ItemPopup } from './script/itemPopup';
+import Rexeightdirectionplugin from './lib/rexeightdirectionplugin.min';
+import Rexvirtualjoystickplugin from './lib/rexvirtualjoystickplugin.min';
 
 class MyGame extends Phaser.Scene {
   constructor() {
@@ -257,11 +19,17 @@ class MyGame extends Phaser.Scene {
     this.centerX = null;
     this.centerY = null;
     this.player;
+    this.playerInputKey = {
+      left: false,
+      right: false,
+      up: false,
+      down: false,
+    };
     this.playerDir;
     this.cursors;
     this.bg;
     this.enemyBullet;
-    this.enemyBulletCount = 50;
+    this.enemyBulletCount = 40;
     this.enemyCount = this.enemyBulletCount;
     this.enemyCountText;
     this.timerText;
@@ -273,7 +41,6 @@ class MyGame extends Phaser.Scene {
     this.scoreContainer;
     this.scorePopup;
     this.joyStick;
-    //this.topNavi;
     this.invincibility = false;
     this.startArea = [
       {
@@ -326,36 +93,32 @@ class MyGame extends Phaser.Scene {
   preload() {
     this.centerX = this.cameras.main.width / 2;
     this.centerY = this.cameras.main.height / 2;
-    this.load.image('startBtn', startImg);
-    this.load.spritesheet('enemyBullet', enemyBulletImg, {
+    this.load.image('startBtn', StartImg);
+    this.load.spritesheet('enemyBullet', EnemyBulletImg, {
       frameWidth: 52,
       frameHeight: 25,
     });
-    this.load.spritesheet('player', playerImg, {
+    this.load.spritesheet('player', PlayerImg, {
       frameWidth: 93,
       frameHeight: 63,
     });
-    this.load.spritesheet('itemBullet', itemImg, {
+    this.load.spritesheet('itemBullet', ItemImg, {
       frameWidth: 115,
       frameHeight: 100,
     });
-    this.load.image('bg', bgImg);
-    this.load.image('score', scoreImg);
-    this.load.plugin(
-      'rexeightdirectionplugin',
-      'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexeightdirectionplugin.min.js',
-      true
-    );
+    this.load.image('bg', BgImg);
+    this.load.image('score', ScoreImg);
+    this.load.plugin('rexeightdirectionplugin', Rexeightdirectionplugin, true);
     this.load.plugin(
       'rexvirtualjoystickplugin',
-      'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js',
+      Rexvirtualjoystickplugin,
       true
     );
   }
 
   create() {
     // 게임 토큰 저장
-    api('get', 'users/load', {}, (res) => {
+    Api('get', 'users/load', {}, (res) => {
       if (res.msg == 'ERROR') {
         this.scene.stop();
       }
@@ -376,6 +139,7 @@ class MyGame extends Phaser.Scene {
     // 플레이어
     this.player = this.add.sprite(this.centerX, this.centerY, 'player');
     this.player.setOrigin(0.5, 0.5);
+    this.player.setScale(0.6);
     this.physics.world.enable(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setCircle(30, 15);
@@ -390,9 +154,6 @@ class MyGame extends Phaser.Scene {
     // this.topNavi.fillRect(0, 0, 1000, 50);
     // zones.add(zone);
     // this.physics.add.collider(this.player, zones);
-
-    // 키보드 이벤트 추가
-    this.cursors = this.input.keyboard.createCursorKeys();
 
     // 게임 시작 버튼
     this.gameStartBtn = this.add.image(this.centerX, this.centerY, 'startBtn');
@@ -424,7 +185,7 @@ class MyGame extends Phaser.Scene {
         .on('update', this.dumpJoyStickState, this);
 
       this.plugins.get('rexeightdirectionplugin').add(this.player, {
-        speed: 150,
+        speed: 200,
         dir: '8dir',
         rotateToDirection: false,
         cursorKeys: this.joyStick.createCursorKeys(),
@@ -445,13 +206,41 @@ class MyGame extends Phaser.Scene {
     this.scoreContainer.add(this.scorePopup);
     this.scoreContainer.add(this.timerText);
 
+    // scene start callback 이벤트
     this.events.on('start', () => {
       this.gameRestart();
     });
 
-    // resume 이벤트
+    // scene resume callback 이벤트
     this.events.on('resume', () => {
       this.gameResume();
+    });
+
+    // 키보드 이벤트 추가
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key == 'ArrowLeft') {
+        this.playerInputKey.left = true;
+      } else if (e.key == 'ArrowRight') {
+        this.playerInputKey.right = true;
+      } else if (e.key == 'ArrowUp') {
+        this.playerInputKey.up = true;
+      } else if (e.key == 'ArrowDown') {
+        this.playerInputKey.down = true;
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key == 'ArrowLeft') {
+        this.playerInputKey.left = false;
+      } else if (e.key == 'ArrowRight') {
+        this.playerInputKey.right = false;
+      } else if (e.key == 'ArrowUp') {
+        this.playerInputKey.up = false;
+      } else if (e.key == 'ArrowDown') {
+        this.playerInputKey.down = false;
+      }
     });
   }
 
@@ -463,31 +252,38 @@ class MyGame extends Phaser.Scene {
     if (this.sys.game.device.os.desktop) {
       this.player.body.velocity.setTo(0, 0);
 
-      if (this.cursors.left.isDown) {
-        this.player.body.velocity.x = -150;
+      if (this.playerInputKey.left) {
+        this.player.body.velocity.x = -200;
         this.player.setTexture('player', 0);
         this.playerDir = 'left';
-      } else if (this.cursors.right.isDown) {
-        this.player.body.velocity.x = +150;
+      }
+      if (this.playerInputKey.right) {
+        this.player.body.velocity.x = +200;
         this.player.setTexture('player', 2);
         this.playerDir = 'right';
-      } else if (this.cursors.up.isDown) {
-        this.player.body.velocity.y = -150;
-      } else if (this.cursors.down.isDown) {
+      }
+      if (this.playerInputKey.up) {
+        this.player.body.velocity.y = -200;
+      }
+      if (this.playerInputKey.down) {
+        this.player.body.velocity.y = +200;
+      }
+
+      if (this.playerInputKey.left && this.playerInputKey.down) {
+        this.player.body.velocity.x = -150;
         this.player.body.velocity.y = +150;
       }
-      if (this.cursors.left.isDown && this.cursors.down.isDown) {
-        this.player.body.velocity.x = -100;
-        this.player.body.velocity.y = +100;
-      } else if (this.cursors.left.isDown && this.cursors.up.isDown) {
-        this.player.body.velocity.x = -100;
-        this.player.body.velocity.y = -100;
-      } else if (this.cursors.right.isDown && this.cursors.up.isDown) {
-        this.player.body.velocity.x = +100;
-        this.player.body.velocity.y = -100;
-      } else if (this.cursors.right.isDown && this.cursors.down.isDown) {
-        this.player.body.velocity.x = +100;
-        this.player.body.velocity.y = +100;
+      if (this.playerInputKey.left && this.playerInputKey.up) {
+        this.player.body.velocity.x = -150;
+        this.player.body.velocity.y = -150;
+      }
+      if (this.playerInputKey.right && this.playerInputKey.up) {
+        this.player.body.velocity.x = +150;
+        this.player.body.velocity.y = -150;
+      }
+      if (this.playerInputKey.right && this.playerInputKey.down) {
+        this.player.body.velocity.x = +150;
+        this.player.body.velocity.y = +150;
       }
     }
 
@@ -510,7 +306,6 @@ class MyGame extends Phaser.Scene {
       this
     );
 
-    // this.topNavi.setDepth(1);
     this.scoreContainer.setDepth(1);
   }
 
@@ -573,7 +368,6 @@ class MyGame extends Phaser.Scene {
 
   gameResume() {
     this.player.alpha = 0.5;
-    this.invincibility = true;
     setTimeout(() => {
       this.player.alpha = 1;
       this.invincibility = false;
@@ -584,7 +378,6 @@ class MyGame extends Phaser.Scene {
     this.gameStartFlag = false;
     this.enemyCount = this.enemyBulletCount;
     this.timer = '000';
-    //this.scene.restart();
   }
 
   enemyHitsPlayer(bullet, player) {
@@ -595,8 +388,12 @@ class MyGame extends Phaser.Scene {
     // 아이템 먹었을 경우
     if (bullet.name.indexOf('item_') > -1) {
       bullet.setVisible(false);
+      this.invincibility = true;
       this.physics.world.disable(bullet);
-      this.scene.launch('itemPopup', { itemNum: bullet.name.split('_')[1] });
+      this.scene.launch('itemPopup', {
+        itemNum: bullet.name.split('_')[1],
+        game: game,
+      });
     }
     // 총알 맞았을 경우
     else {
@@ -608,6 +405,7 @@ class MyGame extends Phaser.Scene {
       this.gameOverFlag = true;
       this.scene.launch('endingPopup', {
         score: (this.timer * 0.001).toFixed(2),
+        game: game,
       });
     }
   }
@@ -671,7 +469,7 @@ loadFont('SpoqaHanSansNeo-Regular', SpoqaHanSansNeoRegularFont);
 
 const config = {
   type: Phaser.AUTO,
-  scene: [MyGame, endingPopup, itemPopup],
+  scene: [MyGame, EndingPopup, ItemPopup],
   parent: 'phaser-game',
   scale: {
     mode: Phaser.Scale.FIT,
@@ -682,7 +480,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true,
+      debug: false,
     },
   },
   plugins: {
