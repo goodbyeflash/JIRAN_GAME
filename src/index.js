@@ -42,6 +42,7 @@ class MyGame extends Phaser.Scene {
     this.scorePopup;
     this.joyStick;
     this.invincibility = false;
+    this.dim;
     this.startArea = [
       {
         index: 0,
@@ -127,6 +128,13 @@ class MyGame extends Phaser.Scene {
     // 배경
     this.bg = this.add.tileSprite(this.centerX, this.centerY, 1000, 800, 'bg');
 
+    // dim 배경
+    this.dim = this.add
+      .graphics()
+      .fillStyle(0x4771fa, 0.6)
+      .fillRect(0, 0, 1000, 800);
+    this.dim.setVisible(false);
+
     // 적 총알 셋팅
     this.enemyBullet = this.add.group();
     this.enemyBullet.createMultiple({
@@ -145,15 +153,6 @@ class MyGame extends Phaser.Scene {
     this.player.body.setCircle(30, 15);
     this.player.body.debugBodyColor = 0xffff00;
     this.player.setVisible(false);
-
-    // 상단 충돌 영역
-    // var zones = this.physics.add.staticGroup();
-    // var zone = this.add.zone(this.centerX, 25, 1000, 50);
-    // this.topNavi = this.add.graphics();
-    // this.topNavi.fillStyle(0xffffff);
-    // this.topNavi.fillRect(0, 0, 1000, 50);
-    // zones.add(zone);
-    // this.physics.add.collider(this.player, zones);
 
     // 게임 시작 버튼
     this.gameStartBtn = this.add.image(this.centerX, this.centerY, 'startBtn');
@@ -176,11 +175,11 @@ class MyGame extends Phaser.Scene {
         .get('rexvirtualjoystickplugin')
         .add(this, {
           enable: false,
-          x: 100,
-          y: 700,
-          radius: 80,
-          base: this.add.circle(0, 0, 80, 0x888888, 0.5),
-          thumb: this.add.circle(0, 0, 40, 0xcccccc),
+          x: 150,
+          y: 660,
+          radius: 100,
+          base: this.add.circle(0, 0, 120, 0x888888, 0.5),
+          thumb: this.add.circle(0, 0, 60, 0xcccccc),
         })
         .on('update', this.dumpJoyStickState, this);
 
@@ -403,6 +402,8 @@ class MyGame extends Phaser.Scene {
         this.player.setTexture('player', 1);
       }
       this.gameOverFlag = true;
+      this.dim.setDepth(1);
+      this.dim.setVisible(true);
       this.scene.launch('endingPopup', {
         score: (this.timer * 0.001).toFixed(2),
         game: game,
