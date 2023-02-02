@@ -6,12 +6,14 @@ import PlayerImg from './assets/image/player.png';
 import ItemImg from './assets/image/item.png';
 import BgImg from './assets/image/bg.png';
 import ScoreImg from './assets/image/bg_score.png';
-import SpoqaHanSansNeoRegularFont from './assets/font/SpoqaHanSansNeo-Regular.ttf';
+import SpoqaHanSansNeoBoldFont from './assets/font/SpoqaHanSansNeo-Bold.ttf';
 import Api from './lib/api';
 import { EndingPopup } from './script/endingPopup';
 import { ItemPopup } from './script/itemPopup';
 import Rexeightdirectionplugin from './lib/rexeightdirectionplugin.min';
 import Rexvirtualjoystickplugin from './lib/rexvirtualjoystickplugin.min';
+
+let game;
 
 class MyGame extends Phaser.Scene {
   constructor() {
@@ -198,9 +200,10 @@ class MyGame extends Phaser.Scene {
     this.scoreContainer = this.add.container(0, 0);
     this.timerText = this.add.text(this.centerX, 170, `${this.timer}초`, {
       fontSize: '30px',
-      color: 'orange',
-      fontFamily: 'SpoqaHanSansNeo-Regular',
+      color: '#fac537',
+      fontFamily: 'SpoqaHanSansNeo-Bold',
     });
+
     this.timerText.setOrigin(0.5, 0.5);
     this.scoreContainer.add(this.scorePopup);
     this.scoreContainer.add(this.timerText);
@@ -460,13 +463,14 @@ const loadFont = (name, url) => {
     .load()
     .then(function (loaded) {
       document.fonts.add(loaded);
+      game = new Phaser.Game(config);
     })
     .catch(function (error) {
       return error;
     });
 };
 
-loadFont('SpoqaHanSansNeo-Regular', SpoqaHanSansNeoRegularFont);
+loadFont('SpoqaHanSansNeo-Bold', SpoqaHanSansNeoBoldFont);
 
 const config = {
   type: Phaser.AUTO,
@@ -497,5 +501,3 @@ const config = {
     createContainer: true,
   },
 };
-
-const game = new Phaser.Game(config);

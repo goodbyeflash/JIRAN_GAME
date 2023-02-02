@@ -9,6 +9,7 @@ import CloseImg from '../assets/image/btn_close.png';
 import GiftImg from '../assets/image/btn_gifticon.png';
 import CheckBoxImg from '../assets/image/checkbox.png';
 import SpoqaHanSansNeoRegularFont from '../assets/font/SpoqaHanSansNeo-Regular.ttf';
+import SpoqaHanSansNeoMediumFont from '../assets/font/SpoqaHanSansNeo-Medium.ttf';
 import Rexinputtextplugin from '../lib/rexinputtextplugin.min.js';
 import Api from '../lib/api';
 
@@ -22,6 +23,9 @@ export class EndingPopup extends Phaser.Scene {
     this.finishContainer;
     this.titleImg;
     this.titleFormImg;
+    this.titleFormText1;
+    this.titleFormText2;
+    this.titleFormText3;
     this.titlefinishImg;
     this.titlefinishImg2;
     this.registerButton;
@@ -88,7 +92,7 @@ export class EndingPopup extends Phaser.Scene {
         text: '',
         color: 'black',
         maxLength: 20,
-        fontFamily: 'SpoqaHanSansNeoRegularFont',
+        fontFamily: 'SpoqaHanSansNeo-Regular',
         fontSize: '20px',
         placeholder: '닉네임을 입력해주세요.',
         backgroundColor: 'white',
@@ -103,7 +107,7 @@ export class EndingPopup extends Phaser.Scene {
         text: '',
         color: 'black',
         maxLength: 13,
-        fontFamily: 'SpoqaHanSansNeoRegularFont',
+        fontFamily: 'SpoqaHanSansNeo-Regular',
         fontSize: '20px',
         placeholder: '기프티콘 수령 연락처를 입력해주세요.',
         backgroundColor: 'white',
@@ -114,11 +118,6 @@ export class EndingPopup extends Phaser.Scene {
     this.hpInputText.on(
       'textchange',
       (inputText, e) => {
-        // const regex = /^[0-9\b -]{0,13}$/;
-        // if (!regex.test(e.target.value)) {
-        //   e.preventDefault();
-        // }
-
         inputText.setText(
           e.target.value
             .replace(/[^0-9]/g, '') // 숫자를 제외한 모든 문자 제거
@@ -135,7 +134,7 @@ export class EndingPopup extends Phaser.Scene {
         text: '',
         color: 'black',
         maxLength: 30,
-        fontFamily: 'SpoqaHanSansNeoRegularFont',
+        fontFamily: 'SpoqaHanSansNeo-Regular',
         fontSize: '20px',
         placeholder: '메일주소를 입력해주세요.',
         backgroundColor: 'white',
@@ -159,12 +158,46 @@ export class EndingPopup extends Phaser.Scene {
       0
     );
 
-    // 폼 텍스트
-    this.titleFormImg = this.add.image(
-      this.centerX + 60,
-      this.centerY + 180,
-      'titleForm'
-    );
+    // 폼 텍스트 이미지
+    // this.titleFormImg = this.add.image(
+    //   this.centerX + 60,
+    //   this.centerY + 180,
+    //   'titleForm'
+    // );
+
+    // 폼 텍스트 1
+    this.titleFormText1 = this.add
+      .text(
+        this.centerX - 200,
+        this.centerY + 115,
+        '[필수] 개인정보 수집 및 이용에 동의합니다.',
+        {
+          fontSize: '25px',
+          fontFamily: 'SpoqaHanSansNeo-Medium',
+        }
+      )
+      .setOrigin(0, 0.5);
+
+    // 폼 텍스트 2
+    this.titleFormText2 = this.add
+      .text(this.centerX - 200, this.centerY + 190, '[선택] 마케팅 수신 동의', {
+        fontSize: '25px',
+        fontFamily: 'SpoqaHanSansNeo-Medium',
+      })
+      .setOrigin(0, 0.5);
+
+    // 폼 텍스트 3
+    this.titleFormText3 = this.add
+      .text(
+        this.centerX - 200,
+        this.centerY + 240,
+        '동의 하실 경우 제품과 관련한 업데이트 정보, 세미나 개최, 게임 이벤트 등 소식을\n무료로 받아 보실 수 있으며, 동의 이후 언제든 마케팅 정보 수신을 거부할 수 있습니다.',
+        {
+          fontSize: '15px',
+          fontFamily: 'SpoqaHanSansNeo-Regular',
+        }
+      )
+      .setOrigin(0, 0.5);
 
     // 기프티콘 받기 버튼
     this.sendButton = this.add.image(
@@ -176,16 +209,16 @@ export class EndingPopup extends Phaser.Scene {
     // 기록 등록이 완료되었습니다.
     this.titlefinishImg = this.add.image(
       this.centerX,
-      this.centerY - 100,
+      this.centerY - 50,
       'titleFinish'
     );
 
     // 추첨 안내 메시지
-    this.titlefinishImg2 = this.add.image(
-      this.centerX,
-      this.centerY,
-      'titleFinish2'
-    );
+    // this.titlefinishImg2 = this.add.image(
+    //   this.centerX,
+    //   this.centerY,
+    //   'titleFinish2'
+    // );
 
     // 닫기 버튼
     this.closeButton = this.add.image(
@@ -208,7 +241,9 @@ export class EndingPopup extends Phaser.Scene {
       this.emailInputText,
       this.checkBoxButton1,
       this.checkBoxButton2,
-      this.titleFormImg,
+      this.titleFormText1,
+      this.titleFormText2,
+      this.titleFormText3,
       this.sendButton,
     ]);
     this.formContainer.setVisible(false);
@@ -216,7 +251,7 @@ export class EndingPopup extends Phaser.Scene {
     // 완료 폼 컨테이너
     this.finishContainer.add([
       this.titlefinishImg,
-      this.titlefinishImg2,
+      // this.titlefinishImg2,
       this.closeButton,
     ]);
     this.finishContainer.setVisible(false);
@@ -351,19 +386,23 @@ export class EndingPopup extends Phaser.Scene {
               `users/${res.result.data.exist._id}`,
               sendData,
               (res) => {
-                this.formContainer.setVisible(false);
-                this.finishContainer.setVisible(true);
+                this.onComplete();
               }
             );
           }
         }
         // 데이터 정상적으로 등록 완료
         else {
-          this.formContainer.setVisible(false);
-          this.finishContainer.setVisible(true);
+          this.onComplete();
         }
       }
     });
+  }
+
+  onComplete() {
+    window.parent.postMessage('dataUpdate', '*');
+    this.formContainer.setVisible(false);
+    this.finishContainer.setVisible(true);
   }
 
   email_check(email) {
@@ -386,3 +425,4 @@ const loadFont = (name, url) => {
 };
 
 loadFont('SpoqaHanSansNeo-Regular', SpoqaHanSansNeoRegularFont);
+loadFont('SpoqaHanSansNeo-Medium', SpoqaHanSansNeoMediumFont);
